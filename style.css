@@ -6,6 +6,8 @@
     --secondary: #4facfe;
     --text-main: #ffffff;
     --text-muted: #a0aec0;
+    --drag-border: #4facfe;
+    --drop-zone-bg: #101826;
 }
 
 * {
@@ -63,8 +65,8 @@ body {
     color: var(--primary);
 }
 
-/* 主視覺區 Hero */
-.hero {
+/* Banner區塊增強 */
+.banner {
     height: 100vh;
     display: flex;
     align-items: center;
@@ -72,6 +74,45 @@ body {
     text-align: center;
     background: radial-gradient(circle at center, #1a2639 0%, var(--bg-main) 70%);
     padding: 0 20px;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-image: url('https://picsum.photos/1920/1080?random=1'); /* 預設Banner圖 */
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 14, 23, 0.6);
+    z-index: 1;
+}
+
+.banner-content {
+    position: relative;
+    z-index: 2;
+}
+
+.banner-edit-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 3;
+    padding: 10px 20px;
+    background: rgba(19, 26, 38, 0.8);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.banner-edit-btn:hover {
+    background: var(--primary);
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
 }
 
 .hero-content h1 {
@@ -102,6 +143,149 @@ body {
 .btn-primary:hover {
     transform: translateY(-3px);
     box-shadow: 0 0 30px rgba(0, 242, 254, 0.7);
+}
+
+/* 拖曳控制區樣式 */
+.block-drag-controls {
+    padding: 40px 8%;
+    background: var(--bg-card);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.1);
+}
+
+.block-drag-controls h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--primary);
+}
+
+.draggable-blocks {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.draggable-item {
+    padding: 15px 25px;
+    background: var(--bg-main);
+    border: 2px dashed var(--drag-border);
+    border-radius: 8px;
+    cursor: grab;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.draggable-item:hover {
+    background: rgba(79, 172, 254, 0.1);
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.2);
+}
+
+.draggable-item:active {
+    cursor: grabbing;
+}
+
+/* 放置區樣式 */
+.drop-container {
+    padding: 80px 8%;
+}
+
+.drop-zone {
+    min-height: 300px;
+    border: 2px dashed var(--drag-border);
+    border-radius: 15px;
+    background: var(--drop-zone-bg);
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-content: flex-start;
+}
+
+.drop-zone.highlight {
+    background: rgba(79, 172, 254, 0.1);
+    border-style: solid;
+    box-shadow: 0 0 20px rgba(79, 172, 254, 0.2);
+}
+
+/* 新增區塊的通用樣式 */
+.added-block {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 20px;
+    min-width: 280px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.added-block h4 {
+    color: var(--primary);
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.added-block .delete-btn {
+    color: #ff3366;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* 可調整大小的圖片容器 */
+.resizable-image-container {
+    position: relative;
+    background: #0f1724;
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 200px;
+    min-height: 150px;
+}
+
+.resizable-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 調整大小的控制點 */
+.resize-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+.resize-handle.se {
+    bottom: 10px;
+    right: 10px;
+    cursor: se-resize;
+}
+
+/* 文字區塊樣式 */
+.text-block {
+    width: 100%;
+}
+
+.text-block textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 15px;
+    background: var(--bg-main);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-main);
+    border-radius: 8px;
+    resize: vertical;
+    outline: none;
+}
+
+.text-block textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(0,242,254,0.2);
 }
 
 /* 通用 Section 樣式 */
@@ -274,11 +458,15 @@ footer {
     font-size: 0.9rem;
 }
 
-/* 響應式簡單調校 */
+/* 響應式調整 */
 @media (max-width: 768px) {
     .navbar { padding: 15px 5%; }
-    .nav-links { display: none; } /* 行動版隱藏選單簡化 */
+    .nav-links { display: none; }
     .hero-content h1 { font-size: 2.5rem; }
     .about-container { flex-direction: column; text-align: center; }
     .about-stats { justify-content: center; }
+    .block-drag-controls { padding: 20px 5%; }
+    .draggable-blocks { flex-direction: column; align-items: center; }
+    .draggable-item { width: 100%; max-width: 300px; }
+    .drop-zone { min-height: 200px; }
 }

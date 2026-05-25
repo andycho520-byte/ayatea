@@ -3,248 +3,342 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧奶茶機 - 自由排版編輯器</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#165DFF',
-                        secondary: '#6B7280',
-                    },
-                    fontFamily: {
-                        sans: ['Noto Sans TC', 'sans-serif'],
-                    },
-                }
-            }
+    <title>SmartTeaBot 後台管理</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 富文本編輯器依賴 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css">
+    <style>
+        /* 後台專屬樣式 */
+        .admin-container {
+            max-width: 1200px;
+            margin: 80px auto 50px;
+            padding: 0 20px;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .draggable {
-                @apply absolute transition-shadow duration-200 border border-dashed border-gray-300 bg-white/90 p-2 rounded shadow-sm select-none;
-            }
-            .draggable:hover {
-                @apply ring-2 ring-primary/50 border-solid border-primary;
-            }
-            .drag-handle {
-                @apply bg-gray-200 text-gray-500 text-xs px-1 py-0.5 rounded cursor-move mb-1 flex justify-between items-center;
-            }
-            .editor-toolbar {
-                @apply fixed top-0 left-0 right-0 bg-white shadow-md z-50 p-2 flex gap-2 flex-wrap items-center;
-            }
-            .canvas-area {
-                @apply mt-16 min-h-[100vh] p-8 bg-gray-900 relative overflow-hidden;
-            }
+        .editor-section {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .editor-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-main);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 8px;
+            outline: none;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+        .btn-save {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: #000;
+            font-weight: bold;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .preview-btn {
+            background: #4facfe;
+            color: #000;
+            font-weight: bold;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-left: 10px;
+        }
+        .save-status {
+            margin-top: 15px;
+            color: var(--primary);
+        }
+        /* 富文本編輯器樣式適配 */
+        .note-editor {
+            border: 1px solid rgba(0,242,254,0.2) !important;
+        }
+        .note-toolbar {
+            background-color: var(--bg-card) !important;
+            border-bottom: 1px solid rgba(0,242,254,0.1) !important;
+        }
+        .note-btn {
+            color: var(--text-main) !important;
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+        .note-editable {
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
+    <nav class="navbar">
+        <div class="logo">Smart<span>TeaBot</span> | 後台管理</div>
+        <ul class="nav-links">
+            <li><a href="index.html" target="_blank">前台預覽</a></li>
+        </ul>
+    </nav>
 
-    <div class="editor-toolbar">
-        <button onclick="addText()" class="bg-primary text-white px-3 py-2 rounded hover:bg-primary/90 flex items-center gap-1 text-sm">
-            <i class="fa fa-font"></i> 新增文字
-        </button>
-        <button onclick="addImage()" class="bg-primary text-white px-3 py-2 rounded hover:bg-primary/90 flex items-center gap-1 text-sm">
-            <i class="fa fa-image"></i> 新增圖片
-        </button>
-        <button onclick="addVideo()" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center gap-1 text-sm">
-            <i class="fa fa-youtube-play"></i> 新增影片
-        </button>
-        <button onclick="exportAsImage()" class="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 flex items-center gap-1 text-sm">
-            <i class="fa fa-download"></i> 匯出圖片
-        </button>
-        <button onclick="clearCanvas()" class="bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 flex items-center gap-1 text-sm">
-            <i class="fa fa-trash"></i> 清空
-        </button>
-        <span class="ml-auto text-gray-500 text-xs self-center">🔧 操作指南：拖曳元件上方的 [:::拖曳] 標籤來移動排版｜雙擊元件可刪除</span>
+    <div class="admin-container">
+        <div class="editor-section">
+            <h2 class="editor-title">1. 首頁核心文案配置</h2>
+            <div class="form-group">
+                <label>Hero 區標題</label>
+                <input type="text" id="heroTitle" placeholder="輸入首頁大標題">
+            </div>
+            <div class="form-group">
+                <label>Hero 區副標題</label>
+                <textarea id="heroDesc" rows="2" placeholder="輸入首頁副標題"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Hero 區按鈕文字</label>
+                <input type="text" id="heroBtnText" placeholder="輸入按鈕文字">
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <h2 class="editor-title">2. 核心功能區配置</h2>
+            <div class="form-group">
+                <label>功能區標題</label>
+                <input type="text" id="featuresTitle" placeholder="輸入功能區標題">
+            </div>
+            <!-- 功能卡片1 -->
+            <div class="form-group">
+                <label>功能卡片1 - 圖標（FontAwesome類名，例：fa-solid fa-microchip）</label>
+                <input type="text" id="feature1Icon" placeholder="輸入圖標類名">
+            </div>
+            <div class="form-group">
+                <label>功能卡片1 - 標題</label>
+                <input type="text" id="feature1Title" placeholder="輸入卡片標題">
+            </div>
+            <div class="form-group">
+                <label>功能卡片1 - 描述</label>
+                <textarea id="feature1Desc" rows="2" placeholder="輸入卡片描述"></textarea>
+            </div>
+            <!-- 功能卡片2 -->
+            <div class="form-group">
+                <label>功能卡片2 - 圖標</label>
+                <input type="text" id="feature2Icon" placeholder="輸入圖標類名">
+            </div>
+            <div class="form-group">
+                <label>功能卡片2 - 標題</label>
+                <input type="text" id="feature2Title" placeholder="輸入卡片標題">
+            </div>
+            <div class="form-group">
+                <label>功能卡片2 - 描述</label>
+                <textarea id="feature2Desc" rows="2" placeholder="輸入卡片描述"></textarea>
+            </div>
+            <!-- 功能卡片3 -->
+            <div class="form-group">
+                <label>功能卡片3 - 圖標</label>
+                <input type="text" id="feature3Icon" placeholder="輸入圖標類名">
+            </div>
+            <div class="form-group">
+                <label>功能卡片3 - 標題</label>
+                <input type="text" id="feature3Title" placeholder="輸入卡片標題">
+            </div>
+            <div class="form-group">
+                <label>功能卡片3 - 描述</label>
+                <textarea id="feature3Desc" rows="2" placeholder="輸入卡片描述"></textarea>
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <h2 class="editor-title">3. 影片區配置</h2>
+            <div class="form-group">
+                <label>影片區標題</label>
+                <input type="text" id="videoTitle" placeholder="輸入影片區標題">
+            </div>
+            <div class="form-group">
+                <label>YouTube 影片鏈接（嵌入鏈接，例：https://www.youtube.com/embed/xxx）</label>
+                <input type="text" id="videoUrl" placeholder="輸入影片嵌入鏈接">
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <h2 class="editor-title">4. 關於我們區配置</h2>
+            <div class="form-group">
+                <label>關於我們標題</label>
+                <input type="text" id="aboutTitle" placeholder="輸入關於我們標題">
+            </div>
+            <div class="form-group">
+                <label>關於我們內容（支援富文本/圖片）</label>
+                <div id="aboutContent"></div>
+            </div>
+            <div class="form-group">
+                <label>統計數字1（例：50+）</label>
+                <input type="text" id="stat1Num" placeholder="輸入數字">
+            </div>
+            <div class="form-group">
+                <label>統計數字1描述</label>
+                <input type="text" id="stat1Desc" placeholder="輸入描述">
+            </div>
+            <div class="form-group">
+                <label>統計數字2（例：100+）</label>
+                <input type="text" id="stat2Num" placeholder="輸入數字">
+            </div>
+            <div class="form-group">
+                <label>統計數字2描述</label>
+                <input type="text" id="stat2Desc" placeholder="輸入描述">
+            </div>
+        </div>
+
+        <div class="editor-section">
+            <h2 class="editor-title">5. 聯繫我們區配置</h2>
+            <div class="form-group">
+                <label>聯繫區標題</label>
+                <input type="text" id="contactTitle" placeholder="輸入聯繫區標題">
+            </div>
+            <div class="form-group">
+                <label>表單提交按鈕文字</label>
+                <input type="text" id="contactBtnText" placeholder="輸入按鈕文字">
+            </div>
+        </div>
+
+        <button class="btn-save" onclick="saveAllSettings()">保存所有配置</button>
+        <button class="preview-btn" onclick="window.open('index.html', '_blank')">前台預覽</button>
+        <div id="saveStatus" class="save-status"></div>
     </div>
 
-    <div id="canvas" class="canvas-area">
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl pointer-events-none"></div>
-    </div>
-
-    <input type="file" id="imageUpload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+    <!-- 依賴JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-zh-TW.min.js"></script>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        let zIndex = 10;
+        // 初始化富文本編輯器
+        $(document).ready(function() {
+            $('#aboutContent').summernote({
+                lang: 'zh-TW',
+                height: 200,
+                placeholder: '輸入關於我們的內容，支援文字格式、圖片插入...',
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['codeview', 'help']]
+                ],
+                // 圖片上傳（本地預覽，生產環境可接後端API）
+                callbacks: {
+                    onImageUpload: function(files) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            $('#aboutContent').summernote('insertImage', e.target.result);
+                        }
+                        reader.readAsDataURL(files[0]);
+                    }
+                }
+            });
 
-        // 初始化拖曳
-        initDragDrop();
+            // 加載已保存的配置
+            loadSavedSettings();
+        });
 
-        // 共通：建立帶有拖曳把手的積木外殼
-        function createWrapper(width = 'auto') {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'draggable';
-            wrapper.style.left = '120px';
-            wrapper.style.top = '120px';
-            wrapper.style.zIndex = zIndex++;
-            wrapper.style.width = width;
-
-            // 建立拖曳把手，避免改字時跟拖曳打架
-            const handle = document.createElement('div');
-            handle.className = 'drag-handle';
-            handle.innerHTML = '<span><i class="fa fa-arrows"></i> :::拖曳</span><span class="text-[10px] text-gray-400">雙擊刪除</span>';
-            
-            wrapper.appendChild(handle);
-            setupElementEvents(wrapper);
-            return wrapper;
-        }
-
-        // 1. 新增文字
-        function addText() {
-            const wrapper = createWrapper('250px');
-            const textEl = document.createElement('div');
-            textEl.className = 'p-1 outline-none text-gray-800 text-base font-medium';
-            textEl.contentEditable = true;
-            textEl.innerText = '點擊這裡輸入智慧奶茶機介紹文案';
-            
-            // 點擊文字內部時，暫時允許選取文字
-            textEl.addEventListener('focus', () => { wrapper.style.cursor = 'default'; });
-            textEl.addEventListener('blur', () => { wrapper.style.cursor = 'move'; });
-
-            wrapper.appendChild(textEl);
-            canvas.appendChild(wrapper);
-        }
-
-        // 2. 新增圖片
-        function addImage() {
-            document.getElementById('imageUpload').click();
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const wrapper = createWrapper('220px');
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'w-full h-auto rounded';
+        // 加載保存的配置到編輯器
+        function loadSavedSettings() {
+            const savedData = localStorage.getItem('smartTeaBotSettings');
+            if (savedData) {
+                const data = JSON.parse(savedData);
                 
-                wrapper.appendChild(img);
-                canvas.appendChild(wrapper);
+                // 1. Hero區
+                $('#heroTitle').val(data.heroTitle || '');
+                $('#heroDesc').val(data.heroDesc || '');
+                $('#heroBtnText').val(data.heroBtnText || '');
+                
+                // 2. 功能區
+                $('#featuresTitle').val(data.featuresTitle || '');
+                $('#feature1Icon').val(data.feature1Icon || '');
+                $('#feature1Title').val(data.feature1Title || '');
+                $('#feature1Desc').val(data.feature1Desc || '');
+                $('#feature2Icon').val(data.feature2Icon || '');
+                $('#feature2Title').val(data.feature2Title || '');
+                $('#feature2Desc').val(data.feature2Desc || '');
+                $('#feature3Icon').val(data.feature3Icon || '');
+                $('#feature3Title').val(data.feature3Title || '');
+                $('#feature3Desc').val(data.feature3Desc || '');
+                
+                // 3. 影片區
+                $('#videoTitle').val(data.videoTitle || '');
+                $('#videoUrl').val(data.videoUrl || '');
+                
+                // 4. 關於我們區
+                $('#aboutTitle').val(data.aboutTitle || '');
+                $('#aboutContent').summernote('code', data.aboutContent || '');
+                $('#stat1Num').val(data.stat1Num || '');
+                $('#stat1Desc').val(data.stat1Desc || '');
+                $('#stat2Num').val(data.stat2Num || '');
+                $('#stat2Desc').val(data.stat2Desc || '');
+                
+                // 5. 聯繫區
+                $('#contactTitle').val(data.contactTitle || '');
+                $('#contactBtnText').val(data.contactBtnText || '');
+            }
+        }
+
+        // 保存所有配置到localStorage
+        function saveAllSettings() {
+            const settings = {
+                // 1. Hero區
+                heroTitle: $('#heroTitle').val().trim(),
+                heroDesc: $('#heroDesc').val().trim(),
+                heroBtnText: $('#heroBtnText').val().trim(),
+                
+                // 2. 功能區
+                featuresTitle: $('#featuresTitle').val().trim(),
+                feature1Icon: $('#feature1Icon').val().trim(),
+                feature1Title: $('#feature1Title').val().trim(),
+                feature1Desc: $('#feature1Desc').val().trim(),
+                feature2Icon: $('#feature2Icon').val().trim(),
+                feature2Title: $('#feature2Title').val().trim(),
+                feature2Desc: $('#feature2Desc').val().trim(),
+                feature3Icon: $('#feature3Icon').val().trim(),
+                feature3Title: $('#feature3Title').val().trim(),
+                feature3Desc: $('#feature3Desc').val().trim(),
+                
+                // 3. 影片區
+                videoTitle: $('#videoTitle').val().trim(),
+                videoUrl: $('#videoUrl').val().trim(),
+                
+                // 4. 關於我們區
+                aboutTitle: $('#aboutTitle').val().trim(),
+                aboutContent: $('#aboutContent').summernote('code'),
+                stat1Num: $('#stat1Num').val().trim(),
+                stat1Desc: $('#stat1Desc').val().trim(),
+                stat2Num: $('#stat2Num').val().trim(),
+                stat2Desc: $('#stat2Desc').val().trim(),
+                
+                // 5. 聯繫區
+                contactTitle: $('#contactTitle').val().trim(),
+                contactBtnText: $('#contactBtnText').val().trim()
             };
-            reader.readAsDataURL(file);
-        }
 
-        // 3. 🔥 新增影片功能（支援貼上 YouTube 網址）
-        function addVideo() {
-            const url = prompt('請輸入 YouTube 影片網址：\n(例如: https://www.youtube.com/watch?v=dQw4w9WgXcQ)');
-            if (!url) return;
-
-            // 轉換 YouTube 網址為 Embed 嵌入格式
-            let videoId = '';
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            if (match && match[2].length === 11) {
-                videoId = match[2];
-            } else {
-                alert('網址格式不正確，請貼上正確的 YouTube 網址！');
-                return;
-            }
-
-            const wrapper = createWrapper('400px');
-            const videoContainer = document.createElement('div');
-            videoContainer.className = 'w-full aspect-video bg-black rounded overflow-hidden pointer-events-none'; // 鎖定內嵌點擊，方便拖曳
-            videoContainer.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
-
-            wrapper.appendChild(videoContainer);
-            canvas.appendChild(wrapper);
-        }
-
-        // 設定元件層級與刪除事件
-        function setupElementEvents(el) {
-            el.addEventListener('mousedown', () => {
-                el.style.zIndex = zIndex++;
-            });
-
-            // 雙擊元件刪除
-            el.addEventListener('dblclick', (e) => {
-                if (confirm('確定要刪除這個區塊元件嗎？')) {
-                    el.remove();
-                }
-                e.stopPropagation();
-            });
-        }
-
-        // 核心：精準拖曳演算法（只有按住 [:::拖曳] 把手才能移動）
-        function initDragDrop() {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            let currentEl = null;
+            // 保存到localStorage
+            localStorage.setItem('smartTeaBotSettings', JSON.stringify(settings));
             
-            document.onmousedown = function(e) {
-                // 必須點擊在拖曳把手（drag-handle）上才觸發移動，完美解決改字被干擾的問題！
-                const handle = e.target.closest('.drag-handle');
-                if (!handle) return;
-                
-                currentEl = handle.closest('.draggable');
-                e.preventDefault();
-                
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                
-                document.onmousemove = function(e) {
-                    if (!currentEl) return;
-                    e.preventDefault();
-                    
-                    pos1 = pos3 - e.clientX;
-                    pos2 = pos4 - e.clientY;
-                    pos3 = e.clientX;
-                    pos4 = e.clientY;
-                    
-                    currentEl.style.top = (currentEl.offsetTop - pos2) + "px";
-                    currentEl.style.left = (currentEl.offsetLeft - pos1) + "px";
-                }
-                
-                document.onmouseup = function() {
-                    document.onmousemove = null;
-                    document.onmouseup = null;
-                    currentEl = null;
-                }
-            }
-        }
-
-        // 匯出畫布為圖片
-        function exportAsImage() {
-            // 匯出前先隱藏所有元件的「拖曳把手」和「虛線邊框」，讓匯出的圖片最完美乾淨
-            const handles = document.querySelectorAll('.drag-handle');
-            const draggables = document.querySelectorAll('.draggable');
-            handles.forEach(h => h.style.display = 'none');
-            draggables.forEach(d => d.style.border = 'none');
-
-            const canvasArea = document.getElementById('canvas');
-            html2canvas(canvasArea, {
-                backgroundColor: '#111827', // 配合科技黑背景
-                scale: 2,
-                useCORS: true
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = '智慧奶茶機官網排版.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-
-                // 匯出完成後恢復顯示把手，方便繼續編輯
-                handles.forEach(h => h.style.display = 'flex');
-                draggables.forEach(d => d.style.border = '1px dashed #d1d5db');
-            });
-        }
-
-        // 清空畫布
-        function clearCanvas() {
-            if (confirm('確定要清空所有內容嗎？')) {
-                canvas.innerHTML = '<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl pointer-events-none"></div>';
-            }
-        }
-
-        // 預設載入一組引導文字
-        window.onload = function() {
-            addText();
+            // 顯示保存狀態
+            const statusEl = $('#saveStatus');
+            statusEl.text('✅ 所有配置已成功保存！前台已同步更新');
+            setTimeout(() => {
+                statusEl.text('');
+            }, 3000);
         }
     </script>
 </body>
