@@ -3,343 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartTeaBot 後台管理</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- 富文本編輯器依賴 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css">
+    <title>後台管理系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
-        /* 後台專屬樣式 */
-        .admin-container {
-            max-width: 1200px;
-            margin: 80px auto 50px;
-            padding: 0 20px;
+        :root {
+            --bg:#0a0e17; --card:#131a26; --p:#00f2fe; --s:#4facfe; --w:#fff; --m:#a0aec0;
         }
-        .editor-section {
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-        .editor-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 12px;
-            background: var(--bg-main);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fff;
-            border-radius: 8px;
-            outline: none;
-        }
-        .form-group input:focus, .form-group textarea:focus {
-            border-color: var(--primary);
-        }
-        .btn-save {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: #000;
-            font-weight: bold;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .preview-btn {
-            background: #4facfe;
-            color: #000;
-            font-weight: bold;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-            margin-left: 10px;
-        }
-        .save-status {
-            margin-top: 15px;
-            color: var(--primary);
-        }
-        /* 富文本編輯器樣式適配 */
-        .note-editor {
-            border: 1px solid rgba(0,242,254,0.2) !important;
-        }
-        .note-toolbar {
-            background-color: var(--bg-card) !important;
-            border-bottom: 1px solid rgba(0,242,254,0.1) !important;
-        }
-        .note-btn {
-            color: var(--text-main) !important;
-            border-color: rgba(255,255,255,0.1) !important;
-        }
-        .note-editable {
-            background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
-        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+        body{background:var(--bg);color:var(--w);padding-bottom:60px;}
+        
+        /* 登入頁 */
+        .login{max-width:400px;margin:100px auto;padding:30px;background:var(--card);border-radius:16px;border:1px solid rgba(0,242,254,.2);}
+        .login h2{color:var(--p);margin-bottom:20px;text-align:center;}
+        .login input{width:100%;padding:12px;margin:8px 0;background:#0d121c;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;outline:none;}
+        .login input:focus{border-color:var(--p);}
+        .login button{width:100%;padding:12px;background:linear-gradient(90deg,var(--p),var(--s));border:none;border-radius:8px;color:#000;font-weight:bold;margin-top:10px;cursor:pointer;}
+        
+        /* 後台介面 */
+        .navbar{display:flex;justify-content:space-between;align-items:center;padding:16px 5%;background:rgba(10,14,23,.95);position:sticky;top:0;z-index:99;border-bottom:1px solid rgba(0,242,254,.1);}
+        .logo{font-size:20px;font-weight:bold;color:var(--p);}
+        .btn{padding:8px 16px;border-radius:8px;background:var(--p);color:#000;border:none;cursor:pointer;font-weight:bold;}
+        .btn-outline{background:transparent;border:1px solid var(--p);color:var(--p);}
+        .container{max-width:1100px;margin:30px auto;padding:0 20px;}
+        .panel{background:var(--card);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid rgba(0,242,254,.1);}
+        .panel h3{color:var(--p);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+        input,select,textarea{width:100%;padding:10px;background:#0d121c;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;outline:none;margin-bottom:8px;}
+        input:focus,select:focus,textarea:focus{border-color:var(--p);}
+        .tip{color:#777;font-size:12px;margin-bottom:8px;}
+        
+        /* 輪播圖 */
+        .banner-item{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+        .banner-item input{flex:1;}
+        .del{color:#ff4466;background:transparent;border:none;cursor:pointer;}
+        
+        /* 表單欄位 */
+        .field-item{display:grid;grid-template-columns:1fr 100px 80px;gap:8px;align-items:center;}
+        .status{padding:10px;border-radius:8px;text-align:center;margin:10px 0;display:none;}
+        .success{background:rgba(0,255,136,.1);color:#0f0;display:block;}
+        .error{background:rgba(255,68,102,.1);color:#f66;display:block;}
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">Smart<span>TeaBot</span> | 後台管理</div>
-        <ul class="nav-links">
-            <li><a href="index.html" target="_blank">前台預覽</a></li>
-        </ul>
-    </nav>
 
-    <div class="admin-container">
-        <div class="editor-section">
-            <h2 class="editor-title">1. 首頁核心文案配置</h2>
-            <div class="form-group">
-                <label>Hero 區標題</label>
-                <input type="text" id="heroTitle" placeholder="輸入首頁大標題">
-            </div>
-            <div class="form-group">
-                <label>Hero 區副標題</label>
-                <textarea id="heroDesc" rows="2" placeholder="輸入首頁副標題"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Hero 區按鈕文字</label>
-                <input type="text" id="heroBtnText" placeholder="輸入按鈕文字">
-            </div>
+<!-- 登入 -->
+<div id="loginPage" class="login">
+    <h2>管理員登入</h2>
+    <input id="adminUser" placeholder="帳號" value="admin">
+    <input id="adminPwd" type="password" placeholder="密碼" value="123456">
+    <button onclick="adminLogin()">登入</button>
+</div>
+
+<!-- 後台 (預設隱藏) -->
+<div id="adminPanel" style="display:none;">
+    <div class="navbar">
+        <div class="logo"><i class="fa-solid fa-rocket"></i> 網站後台</div>
+        <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline" onclick="window.open('index.html')" target="_blank">預覽網站</button>
+            <button class="btn" onclick="saveAllData()">儲存全部</button>
         </div>
-
-        <div class="editor-section">
-            <h2 class="editor-title">2. 核心功能區配置</h2>
-            <div class="form-group">
-                <label>功能區標題</label>
-                <input type="text" id="featuresTitle" placeholder="輸入功能區標題">
-            </div>
-            <!-- 功能卡片1 -->
-            <div class="form-group">
-                <label>功能卡片1 - 圖標（FontAwesome類名，例：fa-solid fa-microchip）</label>
-                <input type="text" id="feature1Icon" placeholder="輸入圖標類名">
-            </div>
-            <div class="form-group">
-                <label>功能卡片1 - 標題</label>
-                <input type="text" id="feature1Title" placeholder="輸入卡片標題">
-            </div>
-            <div class="form-group">
-                <label>功能卡片1 - 描述</label>
-                <textarea id="feature1Desc" rows="2" placeholder="輸入卡片描述"></textarea>
-            </div>
-            <!-- 功能卡片2 -->
-            <div class="form-group">
-                <label>功能卡片2 - 圖標</label>
-                <input type="text" id="feature2Icon" placeholder="輸入圖標類名">
-            </div>
-            <div class="form-group">
-                <label>功能卡片2 - 標題</label>
-                <input type="text" id="feature2Title" placeholder="輸入卡片標題">
-            </div>
-            <div class="form-group">
-                <label>功能卡片2 - 描述</label>
-                <textarea id="feature2Desc" rows="2" placeholder="輸入卡片描述"></textarea>
-            </div>
-            <!-- 功能卡片3 -->
-            <div class="form-group">
-                <label>功能卡片3 - 圖標</label>
-                <input type="text" id="feature3Icon" placeholder="輸入圖標類名">
-            </div>
-            <div class="form-group">
-                <label>功能卡片3 - 標題</label>
-                <input type="text" id="feature3Title" placeholder="輸入卡片標題">
-            </div>
-            <div class="form-group">
-                <label>功能卡片3 - 描述</label>
-                <textarea id="feature3Desc" rows="2" placeholder="輸入卡片描述"></textarea>
-            </div>
-        </div>
-
-        <div class="editor-section">
-            <h2 class="editor-title">3. 影片區配置</h2>
-            <div class="form-group">
-                <label>影片區標題</label>
-                <input type="text" id="videoTitle" placeholder="輸入影片區標題">
-            </div>
-            <div class="form-group">
-                <label>YouTube 影片鏈接（嵌入鏈接，例：https://www.youtube.com/embed/xxx）</label>
-                <input type="text" id="videoUrl" placeholder="輸入影片嵌入鏈接">
-            </div>
-        </div>
-
-        <div class="editor-section">
-            <h2 class="editor-title">4. 關於我們區配置</h2>
-            <div class="form-group">
-                <label>關於我們標題</label>
-                <input type="text" id="aboutTitle" placeholder="輸入關於我們標題">
-            </div>
-            <div class="form-group">
-                <label>關於我們內容（支援富文本/圖片）</label>
-                <div id="aboutContent"></div>
-            </div>
-            <div class="form-group">
-                <label>統計數字1（例：50+）</label>
-                <input type="text" id="stat1Num" placeholder="輸入數字">
-            </div>
-            <div class="form-group">
-                <label>統計數字1描述</label>
-                <input type="text" id="stat1Desc" placeholder="輸入描述">
-            </div>
-            <div class="form-group">
-                <label>統計數字2（例：100+）</label>
-                <input type="text" id="stat2Num" placeholder="輸入數字">
-            </div>
-            <div class="form-group">
-                <label>統計數字2描述</label>
-                <input type="text" id="stat2Desc" placeholder="輸入描述">
-            </div>
-        </div>
-
-        <div class="editor-section">
-            <h2 class="editor-title">5. 聯繫我們區配置</h2>
-            <div class="form-group">
-                <label>聯繫區標題</label>
-                <input type="text" id="contactTitle" placeholder="輸入聯繫區標題">
-            </div>
-            <div class="form-group">
-                <label>表單提交按鈕文字</label>
-                <input type="text" id="contactBtnText" placeholder="輸入按鈕文字">
-            </div>
-        </div>
-
-        <button class="btn-save" onclick="saveAllSettings()">保存所有配置</button>
-        <button class="preview-btn" onclick="window.open('index.html', '_blank')">前台預覽</button>
-        <div id="saveStatus" class="save-status"></div>
     </div>
 
-    <!-- 依賴JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-zh-TW.min.js"></script>
+    <div class="container">
+        <div id="status" class="status"></div>
 
-    <script>
-        // 初始化富文本編輯器
-        $(document).ready(function() {
-            $('#aboutContent').summernote({
-                lang: 'zh-TW',
-                height: 200,
-                placeholder: '輸入關於我們的內容，支援文字格式、圖片插入...',
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'italic', 'underline', 'clear']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['insert', ['link', 'picture']],
-                    ['view', ['codeview', 'help']]
-                ],
-                // 圖片上傳（本地預覽，生產環境可接後端API）
-                callbacks: {
-                    onImageUpload: function(files) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            $('#aboutContent').summernote('insertImage', e.target.result);
-                        }
-                        reader.readAsDataURL(files[0]);
-                    }
-                }
-            });
+        <!-- 多Banner輪播 -->
+        <div class="panel">
+            <h3><i class="fa-solid fa-images"></i> 多Banner輪播</h3>
+            <div class="tip">上傳圖片後會自動產生網址，貼到下方輪播清單</div>
+            <input type="file" multiple onchange="uploadBanner(event)">
+            <div id="bannerList" style="margin-top:10px;"></div>
+            <button class="btn btn-outline" onclick="addBanner()" style="margin-top:10px;">新增輪播圖</button>
+        </div>
 
-            // 加載已保存的配置
-            loadSavedSettings();
+        <!-- 輪播設定 -->
+        <div class="panel">
+            <h3><i class="fa-solid fa-sliders"></i> 輪播設定</h3>
+            <input id="carouselSpeed" placeholder="輪播速度(毫秒) 3000 = 3秒">
+        </div>
+
+        <!-- 首頁編輯器 -->
+        <div class="panel">
+            <h3><i class="fa-solid fa-pen-to-square"></i> 首頁內容</h3>
+            <div id="homeEditor"></div>
+        </div>
+
+        <!-- 關於我們 -->
+        <div class="panel">
+            <h3><i class="fa-solid fa-address-card"></i> 關於我們</h3>
+            <div id="aboutEditor"></div>
+        </div>
+
+        <!-- 自訂表單 -->
+        <div class="panel">
+            <h3><i class="fa-solid fa-table-list"></i> 自訂表單欄位</h3>
+            <div class="tip">可隨意增減欄位，前台會自動產生</div>
+            <div id="formFields"></div>
+            <button class="btn btn-outline" onclick="addFormField()">新增欄位</button>
+        </div>
+
+        <!-- 表單標題 -->
+        <div class="panel">
+            <h3><i class="fa-solid fa-envelope"></i> 表單標題與說明</h3>
+            <input id="formTitle" placeholder="表單標題">
+            <textarea id="formDesc" rows="3" placeholder="表單說明"></textarea>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-zh-TW.min.js"></script>
+<script>
+//=========================
+// 後台登入
+//=========================
+function adminLogin(){
+    let user = $("#adminUser").val();
+    let pwd = $("#adminPwd").val();
+    if(user == "admin" && pwd == "123456"){
+        localStorage.setItem("adminLoggedIn", "1");
+        $("#loginPage").hide();
+        $("#adminPanel").show();
+        initEditor();
+        loadData();
+    }else{
+        showStatus("帳號或密碼錯誤", "error");
+    }
+}
+
+//=========================
+// 檢查登入
+//=========================
+$(function(){
+    if(localStorage.getItem("adminLoggedIn") == "1"){
+        $("#loginPage").hide();
+        $("#adminPanel").show();
+        initEditor();
+        loadData();
+    }
+});
+
+//=========================
+// 富文本編輯器
+//=========================
+function initEditor(){
+    $('#homeEditor').summernote({lang:'zh-TW',height:250});
+    $('#aboutEditor').summernote({lang:'zh-TW',height:250});
+}
+
+//=========================
+// 上傳Banner圖
+//=========================
+function uploadBanner(e){
+    let files = e.target.files;
+    for(let i=0;i<files.length;i++){
+        let reader = new FileReader();
+        reader.onload = function(ev){
+            let url = ev.target.result;
+            $("#bannerList").append(`<div class="banner-item"><input value="${url}" readonly><button class="del" onclick="del(this)">刪除</button></div>`);
+        }
+        reader.readAsDataURL(files[i]);
+    }
+}
+
+//=========================
+// 新增輪播欄位
+//=========================
+function addBanner(){
+    $("#bannerList").append(`<div class="banner-item"><input placeholder="圖片網址"><button class="del" onclick="del(this)">刪除</button></div>`);
+}
+
+//=========================
+// 自訂表單欄位
+//=========================
+function addFormField(){
+    $("#formFields").append(`
+    <div class="field-item">
+        <input placeholder="欄位名稱" class="fname">
+        <select class="ftype">
+            <option value="text">文字</option>
+            <option value="email">信箱</option>
+            <option value="textarea">多行</option>
+            <option value="select">下拉</option>
+        </select>
+        <button class="del" onclick="del(this)">刪除</button>
+    </div>`);
+}
+
+function del(el){$(el).parent().remove();}
+
+//=========================
+// 儲存
+//=========================
+function saveAllData(){
+    let banners = [];
+    $("#bannerList input").each(function(){banners.push($(this).val());});
+    
+    let fields = [];
+    $(".field-item").each(function(){
+        fields.push({
+            name:$(this).find(".fname").val(),
+            type:$(this).find(".ftype").val()
         });
+    });
 
-        // 加載保存的配置到編輯器
-        function loadSavedSettings() {
-            const savedData = localStorage.getItem('smartTeaBotSettings');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                
-                // 1. Hero區
-                $('#heroTitle').val(data.heroTitle || '');
-                $('#heroDesc').val(data.heroDesc || '');
-                $('#heroBtnText').val(data.heroBtnText || '');
-                
-                // 2. 功能區
-                $('#featuresTitle').val(data.featuresTitle || '');
-                $('#feature1Icon').val(data.feature1Icon || '');
-                $('#feature1Title').val(data.feature1Title || '');
-                $('#feature1Desc').val(data.feature1Desc || '');
-                $('#feature2Icon').val(data.feature2Icon || '');
-                $('#feature2Title').val(data.feature2Title || '');
-                $('#feature2Desc').val(data.feature2Desc || '');
-                $('#feature3Icon').val(data.feature3Icon || '');
-                $('#feature3Title').val(data.feature3Title || '');
-                $('#feature3Desc').val(data.feature3Desc || '');
-                
-                // 3. 影片區
-                $('#videoTitle').val(data.videoTitle || '');
-                $('#videoUrl').val(data.videoUrl || '');
-                
-                // 4. 關於我們區
-                $('#aboutTitle').val(data.aboutTitle || '');
-                $('#aboutContent').summernote('code', data.aboutContent || '');
-                $('#stat1Num').val(data.stat1Num || '');
-                $('#stat1Desc').val(data.stat1Desc || '');
-                $('#stat2Num').val(data.stat2Num || '');
-                $('#stat2Desc').val(data.stat2Desc || '');
-                
-                // 5. 聯繫區
-                $('#contactTitle').val(data.contactTitle || '');
-                $('#contactBtnText').val(data.contactBtnText || '');
-            }
-        }
+    let data = {
+        banners: banners,
+        carouselSpeed: $("#carouselSpeed").val() || 3000,
+        home: $('#homeEditor').summernote('code'),
+        about: $('#aboutEditor').summernote('code'),
+        formTitle: $("#formTitle").val(),
+        formDesc: $("#formDesc").val(),
+        formFields: fields
+    };
 
-        // 保存所有配置到localStorage
-        function saveAllSettings() {
-            const settings = {
-                // 1. Hero區
-                heroTitle: $('#heroTitle').val().trim(),
-                heroDesc: $('#heroDesc').val().trim(),
-                heroBtnText: $('#heroBtnText').val().trim(),
-                
-                // 2. 功能區
-                featuresTitle: $('#featuresTitle').val().trim(),
-                feature1Icon: $('#feature1Icon').val().trim(),
-                feature1Title: $('#feature1Title').val().trim(),
-                feature1Desc: $('#feature1Desc').val().trim(),
-                feature2Icon: $('#feature2Icon').val().trim(),
-                feature2Title: $('#feature2Title').val().trim(),
-                feature2Desc: $('#feature2Desc').val().trim(),
-                feature3Icon: $('#feature3Icon').val().trim(),
-                feature3Title: $('#feature3Title').val().trim(),
-                feature3Desc: $('#feature3Desc').val().trim(),
-                
-                // 3. 影片區
-                videoTitle: $('#videoTitle').val().trim(),
-                videoUrl: $('#videoUrl').val().trim(),
-                
-                // 4. 關於我們區
-                aboutTitle: $('#aboutTitle').val().trim(),
-                aboutContent: $('#aboutContent').summernote('code'),
-                stat1Num: $('#stat1Num').val().trim(),
-                stat1Desc: $('#stat1Desc').val().trim(),
-                stat2Num: $('#stat2Num').val().trim(),
-                stat2Desc: $('#stat2Desc').val().trim(),
-                
-                // 5. 聯繫區
-                contactTitle: $('#contactTitle').val().trim(),
-                contactBtnText: $('#contactBtnText').val().trim()
-            };
+    localStorage.setItem("websiteData", JSON.stringify(data));
+    showStatus("✅ 儲存成功！前台已同步更新", "success");
+}
 
-            // 保存到localStorage
-            localStorage.setItem('smartTeaBotSettings', JSON.stringify(settings));
-            
-            // 顯示保存狀態
-            const statusEl = $('#saveStatus');
-            statusEl.text('✅ 所有配置已成功保存！前台已同步更新');
-            setTimeout(() => {
-                statusEl.text('');
-            }, 3000);
-        }
-    </script>
+//=========================
+// 讀取
+//=========================
+function loadData(){
+    let d = localStorage.getItem("websiteData");
+    if(!d) return;
+    d = JSON.parse(d);
+    
+    $("#carouselSpeed").val(d.carouselSpeed || 3000);
+    $("#formTitle").val(d.formTitle);
+    $("#formDesc").val(d.formDesc);
+    $('#homeEditor').summernote('code', d.home || '');
+    $('#aboutEditor').summernote('code', d.about || '');
+    
+    if(d.banners){
+        d.banners.forEach(u=>{
+            $("#bannerList").append(`<div class="banner-item"><input value="${u}" readonly><button class="del" onclick="del(this)">刪除</button></div>`);
+        });
+    }
+    
+    if(d.formFields){
+        d.formFields.forEach(f=>{
+            $("#formFields").append(`
+            <div class="field-item">
+                <input value="${f.name}" class="fname">
+                <select class="ftype">
+                    <option value="text" ${f.type=='text'?'selected':''}>文字</option>
+                    <option value="email" ${f.type=='email'?'selected':''}>信箱</option>
+                    <option value="textarea" ${f.type=='textarea'?'selected':''}>多行</option>
+                    <option value="select" ${f.type=='select'?'selected':''}>下拉</option>
+                </select>
+                <button class="del" onclick="del(this)">刪除</button>
+            </div>`);
+        });
+    }
+}
+
+function showStatus(msg, type){
+    $("#status").text(msg).removeClass("success error").addClass(type).show();
+    setTimeout(()=>{$("#status").hide();},3000);
+}
+</script>
 </body>
 </html>
