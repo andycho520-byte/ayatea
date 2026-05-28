@@ -23,7 +23,7 @@
         /* 後台介面 */
         .navbar{display:flex;justify-content:space-between;align-items:center;padding:16px 5%;background:rgba(10,14,23,.95);position:sticky;top:0;z-index:99;border-bottom:1px solid rgba(0,242,254,.1);}
         .logo{font-size:20px;font-weight:bold;color:var(--p);}
-        .btn{padding:8px 16px;border-radius:8px;background:var(--p);color:#000;border:none;cursor:pointer;font-weight:bold;}
+        .btn{padding:8px 16px;border-radius:8px;background:var(--p);color:#000;border:none;cursor:pointer;font-weight:bold;text-decoration:none;}
         .btn-outline{background:transparent;border:1px solid var(--p);color:var(--p);}
         .container{max-width:1100px;margin:30px auto;padding:0 20px;}
         .panel{background:var(--card);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid rgba(0,242,254,.1);}
@@ -47,7 +47,6 @@
 </head>
 <body>
 
-<!-- 登入 -->
 <div id="loginPage" class="login">
     <h2>管理員登入</h2>
     <input id="adminUser" placeholder="帳號" value="admin">
@@ -55,12 +54,11 @@
     <button onclick="adminLogin()">登入</button>
 </div>
 
-<!-- 後台 (預設隱藏) -->
 <div id="adminPanel" style="display:none;">
     <div class="navbar">
         <div class="logo"><i class="fa-solid fa-rocket"></i> 網站後台</div>
         <div style="display:flex;gap:10px;">
-            <button class="btn btn-outline" onclick="window.open('index.html')" target="_blank">預覽網站</button>
+            <button class="btn btn-outline" onclick="window.open('index.html')">預覽網站</button>
             <button class="btn" onclick="saveAllData()">儲存全部</button>
         </div>
     </div>
@@ -68,7 +66,6 @@
     <div class="container">
         <div id="status" class="status"></div>
 
-        <!-- 多Banner輪播 -->
         <div class="panel">
             <h3><i class="fa-solid fa-images"></i> 多Banner輪播</h3>
             <div class="tip">上傳圖片後會自動產生網址，貼到下方輪播清單</div>
@@ -77,25 +74,21 @@
             <button class="btn btn-outline" onclick="addBanner()" style="margin-top:10px;">新增輪播圖</button>
         </div>
 
-        <!-- 輪播設定 -->
         <div class="panel">
             <h3><i class="fa-solid fa-sliders"></i> 輪播設定</h3>
             <input id="carouselSpeed" placeholder="輪播速度(毫秒) 3000 = 3秒">
         </div>
 
-        <!-- 首頁編輯器 -->
         <div class="panel">
             <h3><i class="fa-solid fa-pen-to-square"></i> 首頁內容</h3>
             <div id="homeEditor"></div>
         </div>
 
-        <!-- 關於我們 -->
         <div class="panel">
             <h3><i class="fa-solid fa-address-card"></i> 關於我們</h3>
             <div id="aboutEditor"></div>
         </div>
 
-        <!-- 自訂表單 -->
         <div class="panel">
             <h3><i class="fa-solid fa-table-list"></i> 自訂表單欄位</h3>
             <div class="tip">可隨意增減欄位，前台會自動產生</div>
@@ -103,7 +96,6 @@
             <button class="btn btn-outline" onclick="addFormField()">新增欄位</button>
         </div>
 
-        <!-- 表單標題 -->
         <div class="panel">
             <h3><i class="fa-solid fa-envelope"></i> 表單標題與說明</h3>
             <input id="formTitle" placeholder="表單標題">
@@ -115,6 +107,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-zh-TW.min.js"></script>
+
 <script>
 //=========================
 // 後台登入
@@ -134,7 +127,7 @@ function adminLogin(){
 }
 
 //=========================
-// 檢查登入
+// 檢查登入狀態
 //=========================
 $(function(){
     if(localStorage.getItem("adminLoggedIn") == "1"){
@@ -146,7 +139,7 @@ $(function(){
 });
 
 //=========================
-// 富文本編輯器
+// 富文本編輯器初始化
 //=========================
 function initEditor(){
     $('#homeEditor').summernote({lang:'zh-TW',height:250});
@@ -154,7 +147,7 @@ function initEditor(){
 }
 
 //=========================
-// 上傳Banner圖
+// 上傳Banner圖 (自動轉為 Base64 唯讀欄位)
 //=========================
 function uploadBanner(e){
     let files = e.target.files;
@@ -169,10 +162,10 @@ function uploadBanner(e){
 }
 
 //=========================
-// 新增輪播欄位
+// 新增輪播欄位 (手動輸入，不設 readonly)
 //=========================
 function addBanner(){
-    $("#bannerList").append(`<div class="banner-item"><input placeholder="圖片網址"><button class="del" onclick="del(this)">刪除</button></div>`);
+    $("#bannerList").append(`<div class="banner-item"><input placeholder="可在此處貼上外部圖片網址 (https://...)"><button class="del" onclick="del(this)">刪除</button></div>`);
 }
 
 //=========================
@@ -195,18 +188,24 @@ function addFormField(){
 function del(el){$(el).parent().remove();}
 
 //=========================
-// 儲存
+// 儲存全部資料
 //=========================
 function saveAllData(){
     let banners = [];
-    $("#bannerList input").each(function(){banners.push($(this).val());});
+    $("#bannerList input").each(function(){
+        let val = $(this).val().trim();
+        if(val !== "") banners.push(val);
+    });
     
     let fields = [];
     $(".field-item").each(function(){
-        fields.push({
-            name:$(this).find(".fname").val(),
-            type:$(this).find(".ftype").val()
-        });
+        let name = $(this).find(".fname").val().trim();
+        if(name !== "") {
+            fields.push({
+                name: name,
+                type: $(this).find(".ftype").val()
+            });
+        }
     });
 
     let data = {
@@ -221,10 +220,13 @@ function saveAllData(){
 
     localStorage.setItem("websiteData", JSON.stringify(data));
     showStatus("✅ 儲存成功！前台已同步更新", "success");
+    
+    // 儲存後重新讀取以刷新介面狀態
+    loadData();
 }
 
 //=========================
-// 讀取
+// 讀取資料 (加入清空機制以防重複堆疊)
 //=========================
 function loadData(){
     let d = localStorage.getItem("websiteData");
@@ -232,22 +234,28 @@ function loadData(){
     d = JSON.parse(d);
     
     $("#carouselSpeed").val(d.carouselSpeed || 3000);
-    $("#formTitle").val(d.formTitle);
-    $("#formDesc").val(d.formDesc);
+    $("#formTitle").val(d.formTitle || "");
+    $("#formDesc").val(d.formDesc || "");
     $('#homeEditor').summernote('code', d.home || '');
     $('#aboutEditor').summernote('code', d.about || '');
     
+    // 【關鍵修正】渲染前先清空輪播圖列表
+    $("#bannerList").empty();
     if(d.banners){
         d.banners.forEach(u=>{
-            $("#bannerList").append(`<div class="banner-item"><input value="${u}" readonly><button class="del" onclick="del(this)">刪除</button></div>`);
+            // 判斷是否為本地上傳的 base64 圖片（若是，則鎖定 input 防止誤刪改原始碼）
+            let isBase64 = u.startsWith("data:image");
+            $("#bannerList").append(`<div class="banner-item"><input value="${u}" ${isBase64 ? 'readonly' : ''} placeholder="圖片網址"><button class="del" onclick="del(this)">刪除</button></div>`);
         });
     }
     
+    // 【關鍵修正】渲染前先清空自訂表單列表
+    $("#formFields").empty();
     if(d.formFields){
         d.formFields.forEach(f=>{
             $("#formFields").append(`
             <div class="field-item">
-                <input value="${f.name}" class="fname">
+                <input value="${f.name}" class="fname" placeholder="欄位名稱">
                 <select class="ftype">
                     <option value="text" ${f.type=='text'?'selected':''}>文字</option>
                     <option value="email" ${f.type=='email'?'selected':''}>信箱</option>
