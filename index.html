@@ -28,23 +28,20 @@
         .form-group{margin-bottom:16px;}
         .form-group label{display:block;margin-bottom:6px;color:var(--w);}
         .form-group input,.form-group textarea,.form-group select{width:100%;padding:12px;background:#0d121c;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;outline:none;}
-        .form-group input:focus{border-color:var(--p);}
+        .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--p);}
         button{background:linear-gradient(90deg,var(--p),var(--s));border:none;padding:12px 24px;border-radius:8px;color:#000;font-weight:bold;cursor:pointer;margin-top:10px;}
     </style>
 </head>
 <body>
 
-<!-- 輪播 -->
 <div class="carousel" id="carousel"></div>
 
-<!-- 首頁內容 -->
 <section class="section">
     <div class="container">
         <div id="homeContent" class="rich"></div>
     </div>
 </section>
 
-<!-- 關於我們 -->
 <section class="section" style="background:var(--card);">
     <div class="container">
         <h2 class="title">關於我們</h2>
@@ -52,16 +49,17 @@
     </div>
 </section>
 
-<!-- 自訂表單 -->
 <section class="section">
     <div class="container">
         <div class="form-panel">
             <h2 class="title" id="formTitleText">線上諮詢</h2>
             <p id="formDescText" style="color:var(--m);margin-bottom:20px;"></p>
-            <form id="dynamicForm"></form>
+            <form id="dynamicForm" onsubmit="submitForm(event)"></form>
         </div>
     </div>
 </section>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
 //=========================
@@ -74,34 +72,41 @@ let data = JSON.parse(localStorage.getItem("websiteData") || "{}");
 //=========================
 function renderCarousel(){
     let wrap = $("#carousel");
+    wrap.empty(); // 【優化】渲染前先清空
+    
     let imgs = data.banners || [];
     if(imgs.length == 0){
-        wrap.html(`<div class="slide active" style="background-image:url(https://picsum.photos/1920/1080)"><div class="overlay"></div><div class="content"><h1>歡迎來到官方網站</h1></div></div>`);
+        wrap.html(`<div class="slide active" style="background-image:url(https://picsum.photos/1920/1080)"><div class="overlay"></div><div class="content"><h1 style="font-size:36px;">歡迎來到官方網站</h1></div></div>`);
         return;
     }
-    imgs.forEach((img,i)=>{
+    
+    imgs.forEach((img, i)=>{
         wrap.append(`
         <div class="slide ${i==0?'active':''}" style="background-image:url(${img})">
             <div class="overlay"></div>
             <div class="content">
-                <h1 style="font-size:36px;color:#fff">輪播圖 ${i+1}</h1>
+                <h1 style="font-size:36px;color:#fff">精選推薦 ${i+1}</h1>
             </div>
         </div>`);
     });
 
-    let speed = data.carouselSpeed || 3000;
-    let cur = 0;
-    setInterval(()=>{
-        $(".slide").removeClass("active");
-        cur = (cur + 1) % imgs.length;
-        $(".slide").eq(cur).addClass("active");
-    }, speed);
+    // 【修正】只有當圖片大於 1 張時，才啟動定時輪播
+    if(imgs.length > 1) {
+        let speed = parseInt(data.carouselSpeed) || 3000;
+        let cur = 0;
+        setInterval(()=>{
+            $(".slide").removeClass("active");
+            cur = (cur + 1) % imgs.length;
+            $(".slide").eq(cur).addClass("active");
+        }, speed);
+    }
 }
 
 //=========================
 // 內容
 //=========================
 function renderContent(){
+    // 夏日編輯器 (Summernote) 輸出的 HTML 直接渲染
     $("#homeContent").html(data.home || "<h2>首頁內容</h2><p>請至後台編輯</p>");
     $("#aboutContent").html(data.about || "<p>請至後台編輯</p>");
     $("#formTitleText").text(data.formTitle || "線上諮詢");
@@ -113,19 +118,42 @@ function renderContent(){
 //=========================
 function renderForm(){
     let form = $("#dynamicForm");
+    form.empty(); // 【優化】渲染前先清空
+    
     let fields = data.formFields || [];
     if(fields.length == 0){
-        form.html(`<div class="form-group"><label>姓名</label><input name="姓名" type="text"></div><button>送出</button>`);
+        form.html(`<div class="form-group"><label>姓名</label><input name="姓名" type="text" required></div><button type="submit">提交表單</button>`);
         return;
     }
+    
     fields.forEach(f=>{
-        let name = f.name || "欄位";
-        if(f.type == "text") form.append(`<div class="form-group"><label>${name}</label><input name="${name}" type="text"></div>`);
-        if(f.type == "email") form.append(`<div class="form-group"><label>${name}</label><input name="${name}" type="email"></div>`);
-        if(f.type == "textarea") form.append(`<div class="form-group"><label>${name}</label><textarea name="${name}"></textarea></div>`);
-        if(f.type == "select") form.append(`<div class="form-group"><label>${name}</label><select name="${name}"><option>選項1</option><option>選項2</option></select></div>`);
+        let name = f.name || "未命名欄位";
+        if(f.type == "text") form.append(`<div class="form-group"><label>${name}</label><input name="${name}" type="text" required></div>`);
+        if(f.type == "email") form.append(`<div class="form-group"><label>${name}</label><input name="${name}" type="email" required></div>`);
+        if(f.type == "textarea") form.append(`<div class="form-group"><label>${name}</label><textarea name="${name}" rows="4" required></textarea></div>`);
+        if(f.type == "select") {
+            form.append(`
+                <div class="form-group">
+                    <label>${name}</label>
+                    <select name="${name}" required>
+                        <option value="">請選擇</option>
+                        <option value="選項A">選項A</option>
+                        <option value="選項B">選項B</option>
+                    </select>
+                </div>
+            `);
+        }
     });
     form.append(`<button type="submit">提交表單</button>`);
+}
+
+//=========================
+// 表單提交處理
+//=========================
+function submitForm(e) {
+    e.preventDefault();
+    alert("🎉 表單送出成功！（前台動態欄位資料已封裝）");
+    $("#dynamicForm")[0].reset();
 }
 
 //=========================
@@ -137,6 +165,5 @@ $(function(){
     renderForm();
 });
 </script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </body>
 </html>
